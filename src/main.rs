@@ -135,6 +135,7 @@ fn main() -> Result<()> {
         .open()?;
     cap.filter(&opt.filter, true)?;
 
+    let mut total_counts = 0;
     let mut statistics = BTreeMap::new();
 
     loop {
@@ -142,6 +143,7 @@ fn main() -> Result<()> {
             Ok(packet) => {
                 if let Some(qr) = process(&packet) {
                     show_query_result(&qr);
+                    total_counts += 1;
                     statistics
                         .entry(qr.name.to_string())
                         .and_modify(|e| *e += 1)
@@ -151,7 +153,7 @@ fn main() -> Result<()> {
             Err(pcap::Error::TimeoutExpired) => {}
             Err(e) => return Err(e.into()),
         }
-        if statistics.len() % 10 == 0 {
+        if total_counts % 10 == 0 {
             dbg!(&statistics);
         }
     }
