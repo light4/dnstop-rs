@@ -132,6 +132,8 @@ pub fn run() -> Result<()> {
     };
     dbg!(&device);
 
+    crate::db::run()?;
+
     let mut cap = pcap::Capture::from_device(device)?
         .immediate_mode(true)
         .open()?;
