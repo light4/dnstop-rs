@@ -1,32 +1,19 @@
-mod db;
+pub mod db;
+pub mod opt;
+pub mod web;
 
-use std::collections::BTreeMap;
+use std::{
+    collections::BTreeMap,
+    sync::{Arc, Mutex, RwLock},
+};
 
-use clap::Parser;
 use color_eyre::{eyre::eyre, Result};
+use rusqlite::Connection;
 use trust_dns_proto::{
     op::message::Message,
     rr::{record_data::RData, Record},
     serialize::binary::BinDecodable,
 };
-
-#[derive(Parser)]
-#[command(
-    author,
-    version,
-    about,
-    long_about = "Capture DNS requests and show their QNames"
-)]
-struct Opt {
-    #[arg(long, help = "device")]
-    device: Option<String>,
-    #[arg(
-        long,
-        help = "pcap filter",
-        default_value = "ip proto \\udp and src port 53"
-    )]
-    filter: String,
-}
 
 #[derive(Debug, Default, Clone)]
 pub struct QueryResult {
@@ -160,22 +147,17 @@ fn process(packet: &[u8]) -> Option<QueryResult> {
     }
 }
 
-pub fn run() -> Result<()> {
-    let opt = Opt::parse();
-    let device = if let Some(device_name) = opt.device {
+pub fn run(opt: &opt::Opt, conn: Arc<Mutex<Connection>>) -> Result<()> {
+    let device = if let Some(device_name) = &opt.device {
         pcap::Device::list()?
             .into_iter()
-            .find(|d| d.name == device_name)
+            .find(|d| d.name == *device_name)
             .ok_or_else(|| eyre!("device {} not found", device_name))?
     } else {
         pcap::Device::lookup()
             .expect("device lookup failed")
             .expect("no device available")
     };
-    dbg!(&device);
-
-    let db_name = format!("dnstop-{}.db", device.name);
-    let mut conn = crate::db::init_db(&db_name)?;
 
     let mut cap = pcap::Capture::from_device(device)?
         .immediate_mode(true)
@@ -195,7 +177,8 @@ pub fn run() -> Result<()> {
                         .entry(qr.name.to_string())
                         .and_modify(|e| *e += 1)
                         .or_insert(1);
-                    crate::db::insert_query_result(&mut conn, &qr)?;
+                    let conn = conn.lock().unwrap();
+                    crate::db::insert_query_result(&conn, &qr)?;
                 }
             }
             Err(pcap::Error::TimeoutExpired) => {}

@@ -1,8 +1,12 @@
-use std::path::Path;
+use std::{
+    path::Path,
+    sync::{Arc, RwLock},
+};
 
 use chrono::{DateTime, Utc};
 use color_eyre::Result;
 use rusqlite::Connection;
+use serde::{Deserialize, Serialize};
 
 use crate::QueryResult;
 
@@ -37,7 +41,7 @@ where
     Ok(conn)
 }
 
-pub fn insert_query_result(conn: &mut Connection, qr: &QueryResult) -> Result<()> {
+pub fn insert_query_result(conn: &Connection, qr: &QueryResult) -> Result<()> {
     let domain = Domain {
         name: qr.name.to_string(),
         records: qr
@@ -55,15 +59,30 @@ pub fn insert_query_result(conn: &mut Connection, qr: &QueryResult) -> Result<()
     Ok(())
 }
 
-pub fn top_k(conn: &mut Connection) -> Result<Vec<(String, u64)>> {
+#[derive(Deserialize, Serialize)]
+pub struct DomainCount {
+    name: String,
+    count: u64,
+}
+
+pub fn top_k(conn: &Connection, k: u64) -> Result<Vec<DomainCount>> {
     let mut result = vec![];
-    let sql = "SELECT name, COUNT(*) as row_count
+    let sql = format!(
+        "SELECT name, COUNT(*) as row_count
     FROM tb_dns_domain
     GROUP BY name
-    ORDER BY row_count DESC;";
+    ORDER BY row_count DESC
+    LIMIT {};",
+        k
+    );
 
-    let mut stmt = conn.prepare(sql)?;
-    let record_iter = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
+    let mut stmt = conn.prepare(&sql)?;
+    let record_iter = stmt.query_map([], |row| {
+        Ok(DomainCount {
+            name: row.get(0)?,
+            count: row.get(1)?,
+        })
+    })?;
     for r in record_iter {
         result.push(r.unwrap());
     }
