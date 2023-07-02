@@ -27,5 +27,5 @@ Options:
 
 ## References
 
-<https://github.com/lilydjwg/capture-dns/>
-<https://github.com/measurement-factory/dnstop/>
+1. <https://github.com/lilydjwg/capture-dns/>
+2. <https://github.com/measurement-factory/dnstop/>
