@@ -4,6 +4,8 @@ use chrono::{DateTime, Utc};
 use color_eyre::Result;
 use rusqlite::Connection;
 
+use crate::QueryResult;
+
 const INIT_SQL: &str = include_str!("init.sql");
 
 #[derive(Debug)]
@@ -33,6 +35,24 @@ where
     )?;
 
     Ok(conn)
+}
+
+pub fn insert_query_result(conn: &mut Connection, qr: &QueryResult) -> Result<()> {
+    let domain = Domain {
+        name: qr.name.to_string(),
+        records: qr
+            .to_simple_records()
+            .iter()
+            .map(|r| &r.data)
+            .cloned()
+            .collect(),
+    };
+    conn.execute(
+        "INSERT INTO tb_dns_domain (name, records) VALUES (?1, ?2)",
+        (&domain.name, &domain.records.join(",")),
+    )?;
+
+    Ok(())
 }
 
 pub fn run() -> Result<()> {
