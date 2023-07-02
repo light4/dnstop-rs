@@ -55,6 +55,22 @@ pub fn insert_query_result(conn: &mut Connection, qr: &QueryResult) -> Result<()
     Ok(())
 }
 
+pub fn top_k(conn: &mut Connection) -> Result<Vec<(String, u64)>> {
+    let mut result = vec![];
+    let sql = "SELECT name, COUNT(*) as row_count
+    FROM tb_dns_domain
+    GROUP BY name
+    ORDER BY row_count DESC;";
+
+    let mut stmt = conn.prepare(sql)?;
+    let record_iter = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
+    for r in record_iter {
+        result.push(r.unwrap());
+    }
+
+    Ok(result)
+}
+
 pub fn run() -> Result<()> {
     let conn = init_db("dnstop.db")?;
 
