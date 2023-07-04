@@ -1,7 +1,4 @@
-use std::{
-    path::Path,
-    sync::{Arc, RwLock},
-};
+use std::path::Path;
 
 use chrono::{DateTime, Utc};
 use color_eyre::Result;
@@ -19,11 +16,11 @@ struct Domain {
 }
 
 #[derive(Debug)]
-struct DomainRow {
-    id: u64,
-    name: String,
-    records: String,
-    create_dt: DateTime<Utc>,
+pub struct DomainRow {
+    pub id: u64,
+    pub name: String,
+    pub records: String,
+    pub create_dt: DateTime<Utc>,
 }
 
 pub fn init_db<P>(path: P) -> Result<Connection>

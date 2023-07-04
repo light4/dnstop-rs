@@ -1,14 +1,12 @@
 use std::{
     net::SocketAddr,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex},
 };
 
 use axum::{
-    async_trait,
-    extract::{FromRef, FromRequestParts, Query, State},
-    http::{request::Parts, StatusCode},
-    response::IntoResponse,
-    routing::{get, post},
+    extract::{Query, State},
+    http::StatusCode,
+    routing::get,
     Json, Router,
 };
 use color_eyre::Result as EyreResult;

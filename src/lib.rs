@@ -4,7 +4,7 @@ pub mod web;
 
 use std::{
     collections::BTreeMap,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex},
 };
 
 use color_eyre::{eyre::eyre, Result};
