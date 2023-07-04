@@ -30,7 +30,7 @@ fn main() -> Result<()> {
                 .build()
                 .unwrap()
                 .block_on(async {
-                    dnstop_rs::web::run(cloned_conn).await.unwrap();
+                    dnstop_rs::web::run(opt.bind, cloned_conn).await.unwrap();
                 });
         });
     }

@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::db::DomainCount;
 
-pub async fn run(conn: Arc<Mutex<Connection>>) -> EyreResult<()> {
+pub async fn run(addr: Option<SocketAddr>, conn: Arc<Mutex<Connection>>) -> EyreResult<()> {
     // build our application with a route
     let app = Router::new()
         // `GET /` goes to `root`
@@ -28,8 +28,8 @@ pub async fn run(conn: Arc<Mutex<Connection>>) -> EyreResult<()> {
         .with_state(conn);
 
     // run it with hyper
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    tracing::debug!("listening on {}", addr);
+    let addr = addr.unwrap_or(SocketAddr::from(([127, 0, 0, 1], 3000)));
+    tracing::debug!("listening on {}", &addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await?;

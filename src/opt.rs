@@ -1,3 +1,5 @@
+use std::net::SocketAddr;
+
 use clap::Parser;
 
 #[derive(Parser)]
@@ -18,4 +20,6 @@ pub struct Opt {
     pub filter: String,
     #[arg(long, help = "do not start web service")]
     pub noweb: bool,
+    #[arg(short, long, help = "web service binding address")]
+    pub bind: Option<SocketAddr>,
 }
