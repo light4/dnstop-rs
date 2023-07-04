@@ -2,6 +2,8 @@
 
 Capture DNS requests and show their QNames
 
+[![CI](https://github.com/light4/dnstop-rs/actions/workflows/test.yaml/badge.svg)](https://github.com/light4/dnstop-rs/actions/workflows/test.yaml)
+
 ```sh
 $ dnstop-rs --help
 Usage: dnstop-rs [OPTIONS]

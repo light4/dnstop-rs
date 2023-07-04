@@ -38,6 +38,9 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: Install libpcap (ubuntu)
+        if: inputs.os == 'ubuntu-latest'
+        run: sudo apt-get install libpcap-dev
       - name: Test
         uses: actions-rs/cargo@v1
         with:
