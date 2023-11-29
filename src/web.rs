@@ -12,6 +12,7 @@ use axum::{
 use color_eyre::Result as EyreResult;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
+use tokio::net::TcpListener;
 
 use crate::db::DomainCount;
 
@@ -27,10 +28,9 @@ pub async fn run(addr: Option<SocketAddr>, conn: Arc<Mutex<Connection>>) -> Eyre
 
     // run it with hyper
     let addr = addr.unwrap_or(SocketAddr::from(([127, 0, 0, 1], 3000)));
-    tracing::debug!("listening on {}", &addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await?;
+    tracing::debug!("listening on {}", addr);
+    let listener = TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app.into_make_service()).await?;
 
     Ok(())
 }

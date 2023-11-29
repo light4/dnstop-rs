@@ -15,6 +15,7 @@ struct Domain {
     records: Vec<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct DomainRow {
     pub id: u64,
